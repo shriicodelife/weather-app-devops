@@ -128,7 +128,7 @@ function mockJsonResponse(data) {
   };
 }
 
-describe("main.js helper functions", () => {
+describe("main.js helper functions", () => { // Testing branch features
   let main;
 
   beforeEach(() => {
