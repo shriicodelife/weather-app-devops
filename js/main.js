@@ -1,5 +1,49 @@
 let apiKey = "1e3e8f230b6064d27976e41163a82b77";
 
+function getWeatherIcon(condition) {
+    let weatherCondition = condition.toLowerCase();
+
+    if (weatherCondition === "rain") {
+        return "img/rain.png";
+    } else if (weatherCondition === "clear" || weatherCondition === "clear sky") {
+        return "img/sun.png";
+    } else if (weatherCondition === "snow") {
+        return "img/snow.png";
+    } else if (weatherCondition === "clouds" || weatherCondition === "smoke") {
+        return "img/cloud.png";
+    } else if (weatherCondition === "mist" || weatherCondition === "fog") {
+        return "img/mist.png";
+    } else if (weatherCondition === "haze") {
+        return "img/haze.png";
+    } else if (weatherCondition === "thunderstorm") {
+        return "img/thunderstorm.png";
+    }
+
+    return "img/sun.png";
+}
+
+function buildDailyForecasts(list) {
+    const dailyForecasts = {};
+
+    list.forEach(item => {
+        const date = item.dt_txt.split(' ')[0];
+        let dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let day = new Date(date).getDay();
+
+        if (!dailyForecasts[date]) {
+            dailyForecasts[date] = {
+                day_today: dayName[day],
+                temperature: Math.floor(item.main.temp) + "Â°",
+                description: item.weather[0].description,
+                weatherImg: item.weather[0].main.toLowerCase()
+            };
+        }
+    });
+
+    return dailyForecasts;
+}
+
+if (typeof navigator !== "undefined" && navigator.geolocation) {
 navigator.geolocation.getCurrentPosition(async function (position) {
    
     try {
@@ -36,30 +80,9 @@ navigator.geolocation.getCurrentPosition(async function (position) {
         tempMinWeather.innerHTML = Math.floor(data.list[0].main.temp_min) + "°";
         tempMaxWeather.innerHTML = Math.floor(data.list[0].main.temp_max) + "°";
 
-        let weatherCondition = data.list[0].weather[0].main.toLowerCase();
-
-        if (weatherCondition === "rain") {
-            weatherImg.src = "img/rain.png";
-            weatherImgs.src = "img/rain.png";
-        } else if (weatherCondition === "clear" || weatherCondition === "clear sky") {
-            weatherImg.src = "img/sun.png";
-            weatherImgs.src = "img/sun.png";
-        } else if (weatherCondition === "snow") {
-            weatherImg.src = "img/snow.png";
-            weatherImgs.src = "img/snow.png";
-        } else if (weatherCondition === "clouds" || weatherCondition === "smoke") {
-            weatherImg.src = "img/cloud.png";
-            weatherImgs.src = "img/cloud.png";
-        } else if (weatherCondition === "mist" || weatherCondition === "Fog") {
-            weatherImg.src = "img/mist.png";
-            weatherImgs.src = "img/mist.png";
-        } else if (weatherCondition === "haze") {
-            weatherImg.src = "img/haze.png";
-            weatherImgs.src = "img/haze.png";
-        } else if (data.weather[0].main === "Thunderstorm") {
-            weatherImg.src = "img/thunderstorm.png";
-            weatherImgs.src = "img/thunderstorm.png";
-        }
+        let currentIcon = getWeatherIcon(data.list[0].weather[0].main);
+        weatherImg.src = currentIcon;
+        weatherImgs.src = currentIcon;
 
         // Fetch and display 5-day forecast data
         const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${data.city.name}&appid=${apiKey}&units=metric`;
@@ -75,25 +98,9 @@ navigator.geolocation.getCurrentPosition(async function (position) {
             });
 
         function displayForecast(data) {
-            const dailyForecasts = {};
+            const dailyForecasts = buildDailyForecasts(data.list);
             let forecast = document.getElementById('future-forecast-box');
             let forecastbox = "";
-
-            data.list.forEach(item => {
-                const date = item.dt_txt.split(' ')[0];
-                let dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                let day = new Date(date).getDay();
-
-                if (!dailyForecasts[date]) {
-                    dailyForecasts[date] = {
-                        day_today: dayName[day],
-                        temperature: Math.floor(item.main.temp) + "°",
-                        description: item.weather[0].description,
-                        weatherImg: item.weather[0].main.toLowerCase()
-                    };
-                }
-            });
-
             for (const date in dailyForecasts) {
                 let imgSrc = "";
 
@@ -103,7 +110,7 @@ navigator.geolocation.getCurrentPosition(async function (position) {
                         break;
                     case "clear":
                     case "clear sky":
-                        imgSrc = "img/sun.png";9
+                        imgSrc = "img/sun.png";
                         break;
                     case "snow":
                         imgSrc = "img/snow.png";
@@ -152,3 +159,12 @@ navigator.geolocation.getCurrentPosition(async function (position) {
     // Handle location retrieval error
     alert("Please turn on your location and refresh the page");
   });
+}
+
+/* istanbul ignore next */
+if (typeof module !== "undefined") {
+  module.exports = {
+    buildDailyForecasts,
+    getWeatherIcon,
+  };
+}

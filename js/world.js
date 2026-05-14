@@ -1,9 +1,9 @@
 let apiKey = "1e3e8f230b6064d27976e41163a82b77";
-let searchinput = document.querySelector(".searchinput");
-let box = document.querySelector(".box");
-let normalMessage = document.querySelector(".normal-message");
-let errorMessage = document.querySelector(".error-message");
-let addedMessage = document.querySelector(".added-message");
+let searchinput = typeof document !== "undefined" ? document.querySelector(".searchinput") : null;
+let box = typeof document !== "undefined" ? document.querySelector(".box") : null;
+let normalMessage = typeof document !== "undefined" ? document.querySelector(".normal-message") : null;
+let errorMessage = typeof document !== "undefined" ? document.querySelector(".error-message") : null;
+let addedMessage = typeof document !== "undefined" ? document.querySelector(".added-message") : null;
 
 // Function to get the date
 let date = new Date().getDate();
@@ -24,8 +24,34 @@ let months_name = [
 let months = new Date().getMonth();
 let year = new Date().getFullYear();
 
-let FullDate = document.querySelector(".date");
-FullDate.innerHTML = `${months_name[months]} ${date}, ${year}`;
+function getFormattedDate(currentDate = new Date()) {
+  return `${months_name[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+}
+
+function getWeatherIcon(condition) {
+  if (condition === "Rain") {
+    return "img/rain.png";
+  } else if (condition === "Clear" || condition === "Clear Sky") {
+    return "img/sun.png";
+  } else if (condition === "Snow") {
+    return "img/snow.png";
+  } else if (condition === "Clouds" || condition === "Smoke") {
+    return "img/cloud.png";
+  } else if (condition === "Mist" || condition === "Fog") {
+    return "img/mist.png";
+  } else if (condition === "Haze") {
+    return "img/haze.png";
+  } else if (condition === "Thunderstorm") {
+    return "img/thunderstorm.png";
+  }
+
+  return "";
+}
+
+let FullDate = typeof document !== "undefined" ? document.querySelector(".date") : null;
+if (FullDate) {
+  FullDate.innerHTML = getFormattedDate();
+}
 
 // Weather info
 async function city(cityName) {
@@ -64,27 +90,7 @@ async function city(cityName) {
     let weatherImg = document.createElement("img");
     weatherImg.className = "weather";
 
-    if (data.weather[0].main === "Rain") {
-      weatherImg.src = "img/rain.png";
-    } else if (data.weather[0].main === "Clear" || data.weather[0].main === "Clear Sky") {
-      weatherImg.src = "img/sun.png";
-    } else if (data.weather[0].main === "Snow") {
-      weatherImg.src = "img/snow.png";
-    } else if (
-      data.weather[0].main === "Clouds" ||
-      data.weather[0].main === "Smoke"
-    ) {
-      weatherImg.src = "img/cloud.png";
-    } else if (
-      data.weather[0].main === "Mist" ||
-      data.weather[0].main === "Fog"
-    ) {
-      weatherImg.src = "img/mist.png";
-    } else if (data.weather[0].main === "Haze") {
-      weatherImg.src = "img/haze.png";
-    } else if (data.weather[0].main === "Thunderstorm") {
-      weatherImg.src = "img/thunderstorm.png";
-    }
+    weatherImg.src = getWeatherIcon(data.weather[0].main);
 
     weatherIconDiv.appendChild(weatherImg);
     nameDiv.appendChild(cityElement);
@@ -101,10 +107,11 @@ async function city(cityName) {
 }
 
 // add section
-let section = document.querySelector(".add-section");
-let navBtn = document.querySelector(".button");
-let navIcon = document.querySelector(".btn-icon");
+let section = typeof document !== "undefined" ? document.querySelector(".add-section") : null;
+let navBtn = typeof document !== "undefined" ? document.querySelector(".button") : null;
+let navIcon = typeof document !== "undefined" ? document.querySelector(".btn-icon") : null;
 
+if (navBtn) {
 navBtn.addEventListener("click", () => {
   if (section.style.top === "-60rem") {
     section.style.top = "100px";
@@ -114,7 +121,9 @@ navBtn.addEventListener("click", () => {
     navIcon.className = "fa-solid fa-circle-plus";
   }
 });
+}
 
+if (searchinput) {
 searchinput.addEventListener("keydown", async function (event) {
   if (event.keyCode === 13 || event.which === 13) {
     const weatherInfo = await city(searchinput.value);
@@ -130,9 +139,21 @@ searchinput.addEventListener("keydown", async function (event) {
     box.prepend(weatherInfo);
   }
 });
+}
 
-city("London");
-city("Paris");
-city("New York");
-city("Mumbai");
-city("Tokyo");
+if (typeof document !== "undefined") {
+  city("London");
+  city("Paris");
+  city("New York");
+  city("Mumbai");
+  city("Tokyo");
+}
+
+/* istanbul ignore next */
+if (typeof module !== "undefined") {
+  module.exports = {
+    city,
+    getFormattedDate,
+    getWeatherIcon,
+  };
+}

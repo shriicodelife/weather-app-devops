@@ -1,8 +1,32 @@
 let apiKey = "1e3e8f230b6064d27976e41163a82b77";
-let searchinput = document.querySelector(`.searchinput`);
+let searchinput = typeof document !== "undefined" ? document.querySelector(`.searchinput`) : null;
+
+function getWeatherIcon(condition) {
+    if (condition === "Rain") {
+        return "img/rain.png";
+    } else if (condition === "Clear") {
+        return "img/sun.png";
+    } else if (condition === "Snow") {
+        return "img/snow.png";
+    } else if (condition === "Clouds" || condition === "Smoke") {
+        return "img/cloud.png";
+    } else if (condition === "Mist" || condition === "Fog") {
+        return "img/mist.png";
+    } else if (condition === "Haze") {
+        return "img/haze.png";
+    } else if (condition === "Thunderstorm") {
+        return "img/thunderstorm.png";
+    }
+
+    return "";
+}
+
+function buildWeatherUrl(city, state, country) {
+    return `https://api.openweathermap.org/data/2.5/weather?units=metric&q=${city},${state},${country}&appid=${apiKey}`;
+}
 
 async function search(city, state, country){
-    let url = await fetch(`https://api.openweathermap.org/data/2.5/weather?units=metric&q=${city},${state},${country}&appid=${apiKey}`);
+    let url = await fetch(buildWeatherUrl(city, state, country));
 
     if(url.ok){
     let data = await url.json();
@@ -26,27 +50,7 @@ async function search(city, state, country){
     document.querySelector(".sunrise").innerHTML =  new Date(data.sys.sunrise * 1000).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     document.querySelector(".sunset").innerHTML =  new Date(data.sys.sunset * 1000).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
 
-    if (data.weather[0].main === "Rain") {
-        weatherImg.src = "img/rain.png";
-      } else if (data.weather[0].main === "Clear") {
-        weatherImg.src = "img/sun.png";
-      } else if (data.weather[0].main === "Snow") {
-        weatherImg.src = "img/snow.png";
-      } else if (
-        data.weather[0].main === "Clouds" ||
-        data.weather[0].main === "Smoke"
-      ) {
-        weatherImg.src = "img/cloud.png";
-      } else if (
-        data.weather[0].main === "Mist" ||
-        data.weather[0].main === "Fog"
-      ) {
-        weatherImg.src = "img/mist.png";
-      } else if (data.weather[0].main === "Haze") {
-        weatherImg.src = "img/haze.png";
-      } else if (data.weather[0].main === "Thunderstorm") {
-        weatherImg.src = "img/thunderstorm.png";
-      }
+    weatherImg.src = getWeatherIcon(data.weather[0].main);
     } else {
       let box = document.querySelector(".return");
       box.style.display = "none";
@@ -60,9 +64,20 @@ async function search(city, state, country){
 }
 
 
+if (searchinput) {
 searchinput.addEventListener('keydown', function(event) {
     if (event.keyCode === 13 || event.which === 13) {
         search(searchinput.value);
         console.log("worked")
       }
   });
+}
+
+/* istanbul ignore next */
+if (typeof module !== "undefined") {
+  module.exports = {
+    buildWeatherUrl,
+    getWeatherIcon,
+    search,
+  };
+}
